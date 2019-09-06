@@ -1,0 +1,40 @@
+{
+	"name": "sharkodlak/db",
+	"description": "Simple DB PDO wrapper.",
+	"keywords": [
+		"DB",
+		"PDO"
+	],
+	"homepage": "https://github.com/Sharkodlak/php-db",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Pavel Štětina",
+			"email": "github@shark.kom.cz",
+			"role": "Architect/Developer"
+		}
+	],
+	"require": {
+		"php": ">=7.2"
+	},
+	"require-dev": {
+		"sharkodlak/development": "~1.0.6"
+	},
+	"suggest": {
+		"ext-pgsql": "PostgreSQL module."
+	},
+	"support": {
+		"issues": "https://github.com/sharkodlak/php-db/issues",
+		"wiki": "https://github.com/sharkodlak/php-db/wiki"
+	},
+	"autoload": {
+		"psr-4": {
+			"Sharkodlak\\Db\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Sharkodlak\\Db\\": "tests/"
+		}
+	}
+}
