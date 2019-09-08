@@ -25,6 +25,18 @@ abstract class Base {
 		return \array_map([$this, 'escapeIdentifier'], $identifiers);
 	}
 
+	protected function escapeWhere(array $whereFieldNames): string {
+		$whereParts = [];
+		foreach ($whereFieldNames as $key => $fieldName) {
+			$whereParts[$key] = sprintf(
+				'%s = %s',
+				$this->escapeIdentifier($fieldName),
+				self::PDO_PLACEHOLDER . $fieldName
+			);
+		}
+		return \implode(' AND ', $whereParts);
+	}
+
 	protected function getPlaceholders(array $fieldNames): array {
 		return \array_map(
 			function($fieldName) {
