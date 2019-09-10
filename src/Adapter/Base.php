@@ -6,6 +6,7 @@ namespace Sharkodlak\Db\Adapter;
 abstract class Base {
 	const PDO_PLACEHOLDER = ':';
 	public $pdo;
+	protected $queryCounter = [];
 
 	public function __construct(\PDO $pdo) {
 		$this->pdo = $pdo;
@@ -44,5 +45,15 @@ abstract class Base {
 			},
 			$fieldNames
 		);
+	}
+
+	public function getQueryCounter(): array {
+		return $this->queryCounter;
+	}
+
+	public function resetQueryCounter(array $counter = []): array {
+		$queryCounter = $this->queryCounter;
+		$this->queryCounter = $counter;
+		return $queryCounter;
 	}
 }

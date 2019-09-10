@@ -3,7 +3,7 @@
 declare(strict_types=1);
 namespace Sharkodlak\Db\Adapter;
 
-class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\InsertOrSelect {
+class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\InsertOrSelect, Interfaces\QueryCounter {
 	protected function escapeIdentifierWord(string $identifier): string {
 		return '"' . $identifier . '"';
 	}
@@ -22,6 +22,9 @@ class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\Inser
 		);
 		$statement = $this->pdo->prepare($query);
 		$success = $statement->execute($fields);
+		if ($success) {
+			$this->queryCounter['insert'] = array_key_exists('insert', $this->queryCounter) ? $this->queryCounter['insert'] + 1 : 1;
+		}
 		return $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
 	}
 
@@ -40,6 +43,9 @@ class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\Inser
 			$statement = $this->pdo->prepare($query);
 			$whereFields = \array_intersect_key($insertFields, \array_flip($whereFieldNames));
 			$success = $statement->execute($whereFields);
+			if ($success) {
+				$this->queryCounter['select'] = array_key_exists('select', $this->queryCounter) ? $this->queryCounter['select'] + 1 : 1;
+			}
 			$result = $statement->fetch(\PDO::FETCH_ASSOC);
 		}
 		return $result;

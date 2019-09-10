@@ -99,11 +99,30 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 	 * @dataProvider pdoProviderInsertSelect
 	 */
 	public function testInsertSelect(Interfaces\InsertOrSelect $dbAdapter, array $fields, array $returns) {
-		//$this->markTestIncomplete();
 		$dbAdapter->pdo->exec('TRUNCATE TABLE "testTable"');
 		$result = $dbAdapter->insertOrSelect('testDatabase.public.testTable', $fields[0], ['second'], ['first']);
 		$this->assertEquals($returns[0], $result);
 		$result = $dbAdapter->insertOrSelect('testDatabase.public.testTable', $fields[1], ['second'], ['first']);
 		$this->assertEquals($returns[1], $result);
+	}
+
+	public function testResetQueryCounter() {
+		$pdoMock = $this->createMock(\PDO::class);
+		$statementMock = $this->createMock(\PDOStatement::class);
+		$statementMock->method('execute')->will($this->onConsecutiveCalls(true, true, true, false, true));
+		$id = ['id' => 123];
+		$statementMock->method('fetch')->will($this->onConsecutiveCalls($id, $id, $id, null, $id));
+		$pdoMock->method('prepare')->willReturn($statementMock);
+		$dbAdapter = new Postgres($pdoMock);
+		$fields = ['first' => 1, 'second' => 2.72];
+		$dbAdapter->insertIgnore('testTable', $fields, ['id']);
+		$this->assertEquals(['insert' => 1], $dbAdapter->getQueryCounter());
+		$dbAdapter->insertIgnore('testTable', $fields, ['id']);
+		$this->assertEquals(['insert' => 2], $dbAdapter->resetQueryCounter());
+		$dbAdapter->insertIgnore('testTable', $fields, ['id']);
+		$this->assertEquals(['insert' => 1], $dbAdapter->getQueryCounter());
+		$dbAdapter->insertOrSelect('testTable', $fields, ['id'], ['first']);
+		$this->assertEquals(['insert' => 1, 'select' => 1], $dbAdapter->resetQueryCounter(['update' => 0]));
+		$this->assertEquals(['update' => 0], $dbAdapter->getQueryCounter());
 	}
 }
