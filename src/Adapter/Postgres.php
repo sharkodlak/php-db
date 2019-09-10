@@ -22,10 +22,11 @@ class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\Inser
 		);
 		$statement = $this->pdo->prepare($query);
 		$success = $statement->execute($fields);
-		if ($success) {
-			$this->queryCounter['insert'] = array_key_exists('insert', $this->queryCounter) ? $this->queryCounter['insert'] + 1 : 1;
+		$result = $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
+		if ($success && $result !== null) {
+			$this->queryCounter['insert'] = ($this->queryCounter['insert'] ?? 0) + 1;
 		}
-		return $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
+		return $result;
 	}
 
 	public function insertOrSelect(string $table, array $insertFields, array $returnFieldNames, array $whereFieldNames): array {
@@ -43,10 +44,10 @@ class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\Inser
 			$statement = $this->pdo->prepare($query);
 			$whereFields = \array_intersect_key($insertFields, \array_flip($whereFieldNames));
 			$success = $statement->execute($whereFields);
-			if ($success) {
-				$this->queryCounter['select'] = array_key_exists('select', $this->queryCounter) ? $this->queryCounter['select'] + 1 : 1;
-			}
 			$result = $statement->fetch(\PDO::FETCH_ASSOC);
+			if ($success && $result !== null) {
+				$this->queryCounter['select'] = ($this->queryCounter['select'] ?? 0) + 1;
+			}
 		}
 		return $result;
 	}
