@@ -48,6 +48,22 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 		$this->assertEquals(['first' => 1], $result);
 	}
 
+	public function testInsertIgnoreNested() {
+		$pdo = self::getPdo();
+		$dbAdapter = new Postgres($pdo);
+		$query = 'SELECT id FROM second_table WHERE charlie = :charlie AND third_id = (
+				SELECT id FROM third_table WHERE delta = :delta
+			)';
+		$nestedQuery = new \Sharkodlak\Db\Queries\Query($query);
+		$nestedQuery->setParams(['charlie' => "\u03B3", 'delta' => "\u03B4"]);
+		$fields = [
+			'alpha' => "\u03B1",
+			'bravo' => "\u03B2",
+			'second_id' => $nestedQuery,
+		];
+		$result = $dbAdapter->insertIgnore('nato', $fields, ['alpha', 'bravo', 'second_id']);
+	}
+
 	public function pdoProviderInsertSelect() {
 		$query = [
 			'INSERT INTO "testDatabase"."public"."testTable" ("first", "second") VALUES (:first, :second) ON CONFLICT DO NOTHING RETURNING "second"',
