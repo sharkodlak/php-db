@@ -62,6 +62,13 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 			'second_id' => $nestedQuery,
 		];
 		$result = $dbAdapter->insertIgnore('nato', $fields, ['alpha', 'bravo', 'second_id']);
+		$expected = [
+			'alpha' => "\u03B1",
+			'bravo' => "\u03B2",
+			'charlie' => "\u03B3",
+			'delta' => "\u03B4",
+		];
+		$this->assertEquals($expected, $result);
 	}
 
 	public function pdoProviderInsertSelect() {

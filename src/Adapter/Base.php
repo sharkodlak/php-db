@@ -38,13 +38,24 @@ abstract class Base {
 		return \implode(' AND ', $whereParts);
 	}
 
-	protected function getPlaceholders(array $fieldNames): array {
-		return \array_map(
-			function($fieldName) {
-				return self::PDO_PLACEHOLDER . $fieldName;
-			},
-			$fieldNames
-		);
+	protected function getFieldsParams(array $fields): array {
+		$params = [];
+		foreach ($fields as $fieldName => $value) {
+			if ($value instanceof \Sharkodlak\Db\Queries\Query) {
+				$params += $value->getParams();
+			} else {
+				$params[$fieldName] = $value;
+			}
+		}
+		return $params;
+	}
+
+	protected function getPlaceholders(array $fields): array {
+		$placeholders = [];
+		foreach ($fields as $fieldName => $value) {
+			$placeholders[] = $value instanceof \Sharkodlak\Db\Queries\Query ? "($value)" : self::PDO_PLACEHOLDER . $fieldName;
+		}
+		return $placeholders;
 	}
 
 	public function getQueryCounter(): array {
