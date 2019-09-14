@@ -50,6 +50,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 
 	public function testInsertIgnoreNested() {
 		$pdo = self::getPdo();
+		$pdo->exec('TRUNCATE TABLE nato');
 		$dbAdapter = new Postgres($pdo);
 		$query = 'SELECT id FROM second_table WHERE charlie = :charlie AND third_id = (
 				SELECT id FROM third_table WHERE delta = :delta
@@ -65,8 +66,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 		$expected = [
 			'alpha' => "\u03B1",
 			'bravo' => "\u03B2",
-			'charlie' => "\u03B3",
-			'delta' => "\u03B4",
+			'second_id' => 1,
 		];
 		$this->assertEquals($expected, $result);
 	}
