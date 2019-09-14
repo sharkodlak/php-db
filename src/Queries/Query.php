@@ -15,8 +15,9 @@ class Query {
 		return sprintf(...$this->queryParts);
 	}
 
-	public function setParams(array $params) {
+	public function setParams(array $params): self {
 		$this->params = $params;
+		return $this;
 	}
 
 	public function getParams() {
