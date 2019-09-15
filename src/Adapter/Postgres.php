@@ -34,7 +34,7 @@ class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\Inser
 		if ($result === null) {
 			$escapedIdentifiers = $this->escapeIdentifiers($returnFieldNames);
 			$escapedTable = $this->escapeIdentifier($table);
-			$escapedWhere = $this->escapeWhere(\array_keys($whereFields));
+			$escapedWhere = $this->escapeWhere($whereFields);
 			$query = sprintf(
 				'SELECT %s FROM %s WHERE %s',
 				implode(', ', $escapedIdentifiers),
@@ -42,7 +42,7 @@ class Postgres extends Base implements Interfaces\InsertIgnore, Interfaces\Inser
 				$escapedWhere
 			);
 			$statement = $this->pdo->prepare($query);
-			$success = $statement->execute($whereFields);
+			$success = $statement->execute($this->getFieldsParams($whereFields));
 			$result = $statement->fetch(\PDO::FETCH_ASSOC);
 			if ($success && $result !== null) {
 				$this->queryCounter['select'] = ($this->queryCounter['select'] ?? 0) + 1;

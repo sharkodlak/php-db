@@ -26,13 +26,17 @@ abstract class Base {
 		return \array_map([$this, 'escapeIdentifier'], $identifiers);
 	}
 
-	protected function escapeWhere(array $whereFieldNames): string {
+	protected function escapePlaceholder($fieldName, $value): string {
+		return $value instanceof \Sharkodlak\Db\Queries\Query ? "($value)" : self::PDO_PLACEHOLDER . $fieldName;
+	}
+
+	protected function escapeWhere(array $whereFields): string {
 		$whereParts = [];
-		foreach ($whereFieldNames as $key => $fieldName) {
-			$whereParts[$key] = sprintf(
+		foreach ($whereFields as $fieldName => $value) {
+			$whereParts[$fieldName] = sprintf(
 				'%s = %s',
 				$this->escapeIdentifier($fieldName),
-				self::PDO_PLACEHOLDER . $fieldName
+				$this->escapePlaceholder($fieldName, $value)
 			);
 		}
 		return \implode(' AND ', $whereParts);
@@ -53,7 +57,7 @@ abstract class Base {
 	protected function getPlaceholders(array $fields): array {
 		$placeholders = [];
 		foreach ($fields as $fieldName => $value) {
-			$placeholders[] = $value instanceof \Sharkodlak\Db\Queries\Query ? "($value)" : self::PDO_PLACEHOLDER . $fieldName;
+			$placeholders[] = $this->escapePlaceholder($fieldName, $value);
 		}
 		return $placeholders;
 	}
