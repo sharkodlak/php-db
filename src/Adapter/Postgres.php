@@ -74,7 +74,7 @@ class Postgres extends Base implements
 	public function upsert(array $returnFieldNames, string $table, array $insertFields, array $updateFieldNames, array $uniqueFieldNamesCastingUpdate): array {
 		$escapedTable = $this->escapeIdentifier($table);
 		$escapedIdentifiers = $this->escapeIdentifiers(array_keys($insertFields));
-		$escapedUniqueIdentifiers = $this->escapeIdentifiers($uniqueFields);
+		$escapedUniqueIdentifiers = $this->escapeIdentifiers($uniqueFieldNamesCastingUpdate);
 		$placeholders = $this->getPlaceholders($insertFields);
 		$escapedUpdateSet = $this->escapeUpdateSet($updateFieldNames);
 		$escapedReturnIdentifiers = $this->escapeIdentifiers($returnFieldNames);
