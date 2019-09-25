@@ -44,7 +44,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 	 */
 	public function testInsertIgnore(Interfaces\InsertIgnore $dbAdapter, array $fields) {
 		$dbAdapter->pdo->exec('TRUNCATE TABLE "testTable"');
-		$result = $dbAdapter->insertIgnore('testDatabase.public.testTable', $fields, ['first']);
+		$result = $dbAdapter->insertIgnore(['first'], 'testDatabase.public.testTable', $fields);
 		$this->assertEquals(['first' => 1], $result);
 	}
 
@@ -62,7 +62,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 			'bravo' => "\u03B2",
 			'second_id' => $nestedQuery,
 		];
-		$result = $dbAdapter->insertIgnore('nato', $fields, ['alpha', 'bravo', 'second_id']);
+		$result = $dbAdapter->insertIgnore(['alpha', 'bravo', 'second_id'], 'nato', $fields);
 		$expected = [
 			'alpha' => "\u03B1",
 			'bravo' => "\u03B2",
@@ -123,9 +123,9 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 	 */
 	public function testInsertSelect(Interfaces\InsertOrSelect $dbAdapter, array $fields, array $returns) {
 		$dbAdapter->pdo->exec('TRUNCATE TABLE "testTable"');
-		$result = $dbAdapter->insertOrSelect('testDatabase.public.testTable', $fields[0], ['second'], ['first']);
+		$result = $dbAdapter->insertOrSelect(['second'], 'testDatabase.public.testTable', $fields[0], ['first']);
 		$this->assertEquals($returns[0], $result);
-		$result = $dbAdapter->insertOrSelect('testDatabase.public.testTable', $fields[1], ['second'], ['first']);
+		$result = $dbAdapter->insertOrSelect(['second'], 'testDatabase.public.testTable', $fields[1], ['first']);
 		$this->assertEquals($returns[1], $result);
 	}
 
@@ -138,14 +138,26 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 		$pdoMock->method('prepare')->willReturn($statementMock);
 		$dbAdapter = new Postgres($pdoMock);
 		$fields = ['first' => 1, 'second' => 2.72];
-		$dbAdapter->insertIgnore('testTable', $fields, ['id']);
+		$dbAdapter->insertIgnore(['id'], 'testTable', $fields);
 		$this->assertEquals(['insert' => 1], $dbAdapter->getQueryCounter());
-		$dbAdapter->insertIgnore('testTable', $fields, ['id']);
+		$dbAdapter->insertIgnore(['id'], 'testTable', $fields);
 		$this->assertEquals(['insert' => 2], $dbAdapter->resetQueryCounter());
-		$dbAdapter->insertIgnore('testTable', $fields, ['id']);
+		$dbAdapter->insertIgnore(['id'], 'testTable', $fields);
 		$this->assertEquals(['insert' => 1], $dbAdapter->getQueryCounter());
-		$dbAdapter->insertOrSelect('testTable', $fields, ['id'], ['first']);
+		$dbAdapter->insertOrSelect(['id'], 'testTable', $fields, ['first']);
 		$this->assertEquals(['insert' => 1, 'select' => 1], $dbAdapter->resetQueryCounter(['update' => 0]));
 		$this->assertEquals(['update' => 0], $dbAdapter->getQueryCounter());
+	}
+
+	public function testUpsert() {
+		$pdo = self::getPdo();
+		$pdo->exec('TRUNCATE TABLE "testTable"');
+		$dbAdapter = new Postgres($pdo);
+		$fields = ['first' => 1, 'second' => 2.72];
+		$result = $dbAdapter->upsert(['second'], 'testDatabase.public.testTable', $fields, ['second'], ['first']);
+		$this->assertEquals(['second' => 2.72], $result);
+		$fields = ['first' => 1, 'second' => 3.14];
+		$result = $dbAdapter->upsert(['second'], 'testDatabase.public.testTable', $fields, ['second'], ['first']);
+		$this->assertEquals(['second' => 3.14], $result);
 	}
 }

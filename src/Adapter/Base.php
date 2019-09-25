@@ -30,10 +30,25 @@ abstract class Base {
 		return $value instanceof \Sharkodlak\Db\Queries\Query ? "($value)" : self::PDO_PLACEHOLDER . $fieldName;
 	}
 
+	protected function escapeUpdateSet(array $updateFieldNames): array {
+		$updateSetParts = [];
+		foreach ($updateFieldNames as $fieldName) {
+			$escapedIdentifier = $this->escapeIdentifier($fieldName);
+			$updateSetParts[] = \sprintf(
+				'%s = %s',
+				$escapedIdentifier,
+				$this->excludedValuesIdentifier($escapedIdentifier)
+			);
+		}
+		return $updateSetParts;
+	}
+
+	abstract protected function excludedValuesIdentifier($escapedFieldName): string;
+
 	protected function escapeWhere(array $whereFields): string {
 		$whereParts = [];
 		foreach ($whereFields as $fieldName => $value) {
-			$whereParts[$fieldName] = sprintf(
+			$whereParts[$fieldName] = \sprintf(
 				'%s = %s',
 				$this->escapeIdentifier($fieldName),
 				$this->escapePlaceholder($fieldName, $value)
