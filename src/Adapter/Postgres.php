@@ -52,7 +52,7 @@ class Postgres extends Base implements
 		return $this->insertOrSelectComplex($returnFieldNames, $table, $insertFields, $whereFields);
 	}
 
-	public function select(array $returnFieldNames, string $table, array $whereFields): array {
+	public function select(array $returnFieldNames, string $table, array $whereFields): ?array {
 		$escapedIdentifiers = $this->escapeIdentifiers($returnFieldNames);
 		$escapedTable = $this->escapeIdentifier($table);
 		$escapedWhere = $this->escapeWhere($whereFields);
@@ -68,7 +68,7 @@ class Postgres extends Base implements
 		if ($success && $result !== null) {
 			$this->queryCounter['select'] = ($this->queryCounter['select'] ?? 0) + 1;
 		}
-		return $result;
+		return $result ?: null;
 	}
 
 	public function upsert(array $returnFieldNames, string $table, array $insertFields, array $updateFieldNames, array $uniqueFieldNamesCastingUpdate): array {
