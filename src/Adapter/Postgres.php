@@ -30,13 +30,7 @@ class Postgres extends Base implements
 			implode(', ', $placeholders),
 			implode(', ', $escapedReturnIdentifiers)
 		);
-		$statement = $this->pdo->prepare($query);
-		$success = $statement->execute($this->getFieldsParams($fields));
-		$result = $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
-		if ($success && $result !== null) {
-			$this->queryCounter['insert'] = ($this->queryCounter['insert'] ?? 0) + 1;
-		}
-		return $result;
+		return $this->query($query, $this->getFieldsParams($fields), 'insert');
 	}
 
 	public function insertOrSelectComplex(array $returnFieldNames, string $table, array $insertFields, array $whereFields): array {
@@ -62,13 +56,7 @@ class Postgres extends Base implements
 			$escapedTable,
 			$escapedWhere
 		);
-		$statement = $this->pdo->prepare($query);
-		$success = $statement->execute($this->getFieldsParams($whereFields));
-		$result = $statement->fetch(\PDO::FETCH_ASSOC);
-		if ($success && $result !== null) {
-			$this->queryCounter['select'] = ($this->queryCounter['select'] ?? 0) + 1;
-		}
-		return $result ?: null;
+		return $this->query($query, $this->getFieldsParams($whereFields), 'select');
 	}
 
 	public function upsert(array $returnFieldNames, string $table, array $insertFields, array $updateFieldNames, array $uniqueFieldNamesCastingUpdate): array {
@@ -87,12 +75,6 @@ class Postgres extends Base implements
 			implode(', ', $escapedUpdateSet),
 			implode(', ', $escapedReturnIdentifiers)
 		);
-		$statement = $this->pdo->prepare($query);
-		$success = $statement->execute($this->getFieldsParams($insertFields));
-		$result = $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
-		if ($success && $result !== null) {
-			$this->queryCounter['insert'] = ($this->queryCounter['insert'] ?? 0) + 1;
-		}
-		return $result;
+		return $this->query($query, $this->getFieldsParams($insertFields), 'insert');
 	}
 }

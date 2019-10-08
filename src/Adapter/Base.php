@@ -81,6 +81,16 @@ abstract class Base {
 		return $this->queryCounter;
 	}
 
+	protected function query(string $query, array $params, string $queryType) {
+		$statement = $this->pdo->prepare($query);
+		$success = $statement->execute($params);
+		$result = $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
+		if ($success && $result !== null) {
+			$this->queryCounter[$queryType] = ($this->queryCounter[$queryType] ?? 0) + 1;
+		}
+		return $result;
+	}
+
 	public function resetQueryCounter(array $counter = []): array {
 		$queryCounter = $this->queryCounter;
 		$this->queryCounter = $counter;

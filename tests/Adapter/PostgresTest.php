@@ -74,7 +74,6 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 	public function pdoProviderInsertSelect() {
 		$query = [
 			'INSERT INTO "testDatabase"."public"."testTable" ("first", "second") VALUES (:first, :second) ON CONFLICT DO NOTHING RETURNING "second"',
-			'INSERT INTO "testDatabase"."public"."testTable" ("first", "second") VALUES (:first, :second) ON CONFLICT DO NOTHING RETURNING "second"',
 			'SELECT "second" FROM "testDatabase"."public"."testTable" WHERE "first" = :first',
 		];
 		$fields = [
@@ -93,9 +92,9 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 		$statementMock = $this->createMock(\PDOStatement::class);
 		$statementMock->method('execute')
 			->withConsecutive(
-				$this->equalTo($fields[0]),
-				$this->equalTo($fields[0]),
-				$this->equalTo($fields[1])
+				[$this->equalTo($fields[0])],
+				[$this->equalTo($fields[1])],
+				[$this->equalTo(['first' => 1])]
 			)->willReturn(true);
 		$statementMock->method('fetch')->will(
 			$this->onConsecutiveCalls(
@@ -108,8 +107,8 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 			->method('prepare')
 			->withConsecutive(
 				[$this->equalTo($query[0])],
-				[$this->equalTo($query[1])],
-				[$this->equalTo($query[2])]
+				[$this->equalTo($query[0])],
+				[$this->equalTo($query[1])]
 			)->willReturn($statementMock);
 		$pdo = self::getPdo();
 		return [
