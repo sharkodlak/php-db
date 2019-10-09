@@ -3,8 +3,25 @@
 namespace Sharkodlak\Db\Adapter;
 
 class PostgresTest extends \PHPUnit\Framework\TestCase {
+	static private $di;
 	static private $pdo;
 	private $pdoMock;
+
+	public static function getDi(): Di {
+		if (!isset(self::$di)) {
+			self::$di = new class implements Di {
+				public function getLogger(): \Psr\Log\LoggerInterface {
+					$logger = new class extends \Psr\Log\AbstractLogger {
+						public function log($level, $message, array $context = []) {
+							fputs(STDERR, $message . "\n");
+						}
+					};
+					return $logger;
+				}
+			};
+		}
+		return self::$di;
+	}
 
 	public static function getPdo(): \PDO {
 		if (!isset(self::$pdo)) {
@@ -34,8 +51,8 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 		$pdoMock->method('prepare')->with($this->equalTo($query))->willReturn($statementMock);
 		$pdo = self::getPdo();
 		return [
-			'mocked PDO' => [new Postgres($pdoMock), $fields],
-			'PDO connected to real DB' => [new Postgres($pdo), $fields],
+			'mocked PDO' => [new Postgres($pdoMock, self::getDi()), $fields],
+			'PDO connected to real DB' => [new Postgres($pdo, self::getDi()), $fields],
 		];
 	}
 
@@ -51,7 +68,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 	public function testInsertIgnoreNested() {
 		$pdo = self::getPdo();
 		$pdo->exec('TRUNCATE TABLE nato');
-		$dbAdapter = new Postgres($pdo);
+		$dbAdapter = new Postgres($pdo, self::getDi());
 		$query = 'SELECT id FROM second_table WHERE charlie = :charlie AND third_id = (
 				SELECT id FROM third_table WHERE delta = :delta
 			)';
@@ -112,8 +129,8 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 			)->willReturn($statementMock);
 		$pdo = self::getPdo();
 		return [
-			'mocked PDO' => [new Postgres($pdoMock), $fields, $returns],
-			'PDO connected to real DB' => [new Postgres($pdo), $fields, $returns],
+			'mocked PDO' => [new Postgres($pdoMock, self::getDi()), $fields, $returns],
+			'PDO connected to real DB' => [new Postgres($pdo, self::getDi()), $fields, $returns],
 		];
 	}
 
@@ -135,7 +152,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 		$id = ['id' => 123];
 		$statementMock->method('fetch')->will($this->onConsecutiveCalls($id, $id, $id, null, $id));
 		$pdoMock->method('prepare')->willReturn($statementMock);
-		$dbAdapter = new Postgres($pdoMock);
+		$dbAdapter = new Postgres($pdoMock, self::getDi());
 		$fields = ['first' => 1, 'second' => 2.72];
 		$dbAdapter->insertIgnore(['id'], 'testTable', $fields);
 		$this->assertEquals(['insert' => 1], $dbAdapter->getQueryCounter());
@@ -151,7 +168,7 @@ class PostgresTest extends \PHPUnit\Framework\TestCase {
 	public function testUpsert() {
 		$pdo = self::getPdo();
 		$pdo->exec('TRUNCATE TABLE "testTable"');
-		$dbAdapter = new Postgres($pdo);
+		$dbAdapter = new Postgres($pdo, self::getDi());
 		$fields = ['first' => 1, 'second' => 2.72];
 		$result = $dbAdapter->upsert(['second'], 'testDatabase.public.testTable', $fields, ['second'], ['first']);
 		$this->assertEquals(['second' => 2.72], $result);

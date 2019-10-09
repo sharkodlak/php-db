@@ -5,11 +5,17 @@ namespace Sharkodlak\Db\Adapter;
 
 abstract class Base {
 	const PDO_PLACEHOLDER = ':';
-	public $pdo;
+	protected $pdo;
+	protected $di;
 	protected $queryCounter = [];
 
-	public function __construct(\PDO $pdo) {
+	public function __construct(\PDO $pdo, Di $di) {
 		$this->pdo = $pdo;
+		$this->di = $di;
+	}
+
+	public function __get(string $name) {
+		return $this->$name;
 	}
 
 	abstract protected function escapeIdentifierWord(string $identifier): string;

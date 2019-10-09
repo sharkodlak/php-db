@@ -30,7 +30,9 @@ class Postgres extends Base implements
 			implode(', ', $placeholders),
 			implode(', ', $escapedReturnIdentifiers)
 		);
-		return $this->query($query, $this->getFieldsParams($fields), 'insert');
+		$fieldParams = $this->getFieldsParams($fields);
+		$this->di->getLogger()->debug($query . "\n" . \print_r($fieldParams, true), $fieldParams);
+		return $this->query($query, $fieldParams, 'insert');
 	}
 
 	public function insertOrSelectComplex(array $returnFieldNames, string $table, array $insertFields, array $whereFields): array {
