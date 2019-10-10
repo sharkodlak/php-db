@@ -91,6 +91,13 @@ abstract class Base {
 		$statement = $this->pdo->prepare($query);
 		$success = $statement->execute($params);
 		$result = $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
+		$msg = sprintf("Query: %s\nParams: %s\nResult %ssuccessful: %s",
+			$query,
+			\var_export($params, true),
+			$success ? '' : 'un',
+			\var_export($result, true)
+		);
+		$this->di->getLogger()->debug($msg, $params);
 		if ($success && $result !== null) {
 			$this->queryCounter[$queryType] = ($this->queryCounter[$queryType] ?? 0) + 1;
 		}

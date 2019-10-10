@@ -31,7 +31,6 @@ class Postgres extends Base implements
 			implode(', ', $escapedReturnIdentifiers)
 		);
 		$fieldParams = $this->getFieldsParams($fields);
-		$this->di->getLogger()->debug($query . "\n" . \print_r($fieldParams, true), $fieldParams);
 		return $this->query($query, $fieldParams, 'insert');
 	}
 
