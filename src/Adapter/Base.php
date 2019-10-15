@@ -89,11 +89,14 @@ abstract class Base {
 
 	protected function query(string $query, array $params, string $queryType) {
 		$statement = $this->pdo->prepare($query);
+		$msg = sprintf("Query: %s\nParams: %s\n",
+			$query,
+			\var_export($params, true)
+		);
+		$this->di->getLogger()->debug($msg, $params);
 		$success = $statement->execute($params);
 		$result = $statement->fetch(\PDO::FETCH_ASSOC) ?: null;
-		$msg = sprintf("Query: %s\nParams: %s\nResult %ssuccessful: %s",
-			$query,
-			\var_export($params, true),
+		$msg = sprintf("Query result %ssuccessful: %s\n",
 			$success ? '' : 'un',
 			\var_export($result, true)
 		);
