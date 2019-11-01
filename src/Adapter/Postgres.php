@@ -31,7 +31,7 @@ class Postgres extends Base implements
 			implode(', ', $escapedReturnIdentifiers)
 		);
 		$fieldParams = $this->getFieldsParams($fields);
-		return $this->query($query, $fieldParams, 'insert');
+		return $this->query($query, $fieldParams);
 	}
 
 	public function insertOrSelectComplex(array $returnFieldNames, string $table, array $insertFields, array $whereFields): array {
@@ -57,7 +57,7 @@ class Postgres extends Base implements
 			$escapedTable,
 			$escapedWhere
 		);
-		return $this->query($query, $this->getFieldsParams($whereFields), 'select');
+		return $this->query($query, $this->getFieldsParams($whereFields));
 	}
 
 	public function upsert(array $returnFieldNames, string $table, array $insertFields, array $updateFieldNames, array $uniqueFieldNamesCastingUpdate): array {
@@ -76,6 +76,6 @@ class Postgres extends Base implements
 			implode(', ', $escapedUpdateSet),
 			implode(', ', $escapedReturnIdentifiers)
 		);
-		return $this->query($query, $this->getFieldsParams($insertFields), 'insert');
+		return $this->query($query, $this->getFieldsParams($insertFields));
 	}
 }

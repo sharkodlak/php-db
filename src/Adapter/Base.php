@@ -87,7 +87,7 @@ abstract class Base {
 		return $this->queryCounter;
 	}
 
-	protected function query(string $query, array $params, string $queryType) {
+	public function query(string $query, array $params) {
 		$statement = $this->pdo->prepare($query);
 		$msg = sprintf("Query: %s\nParams: %s\n",
 			$query,
@@ -102,6 +102,8 @@ abstract class Base {
 		);
 		$this->di->getLogger()->debug($msg, $params);
 		if ($success && $result !== null) {
+			$firstWordEnd = \strpos($query, ' ');
+			$queryType = \strtolower(\substr($query, 0, $firstWordEnd));
 			$this->queryCounter[$queryType] = ($this->queryCounter[$queryType] ?? 0) + 1;
 		}
 		return $result;
